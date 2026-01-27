@@ -1,9 +1,9 @@
 import core.DisplayWindow;
 
-public class RunMe {
+public class Main {
     public static void main(String[] args) {
         // --== Load an image to filter ==--
-//        DisplayWindow.showFor("image.jpg", 900, 600, "DoNothingFilter");
+        DisplayWindow.showFor("images/IMG_4436_resized.jpg", 800, 700, "DoNothing");
 
         // --== Determine your input interactively with menus ==--
 //        DisplayWindow.getInputInteractively(800,600);
