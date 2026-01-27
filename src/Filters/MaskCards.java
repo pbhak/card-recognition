@@ -13,7 +13,7 @@ public class MaskCards implements PixelFilter {
         targetR = 215;
         targetG = 215;
         targetB = 215;
-        threshold = 50;
+        threshold = 85;
     }
 
     @Override
@@ -22,18 +22,22 @@ public class MaskCards implements PixelFilter {
         short[][] greens = img.getGreenChannel();
         short[][] blues = img.getBlueChannel();
 
-        for (int i = 0; i < reds.length; i++) {
-            for (int j = 0; j < reds[i].length; j++) {
-                if (distance(reds[i][j], greens[i][j], blues[i][j], targetR, targetG, targetB) > threshold) {
-                    reds[i][j] = 0;
-                    greens[i][j] = 0;
-                    blues[i][j] = 0;
-                }
-            }
-        }
+        maskCards(reds, greens, blues);
 
         img.setColorChannels(reds, greens, blues);
         return img;
+    }
+
+    private void maskCards(short[][] reds, short[][] greens, short[][] blues) {
+        for (int r = 0; r < reds.length; r++) {
+            for (int c = 0; c < reds[r].length; c++) {
+                if (distance(reds[r][c], greens[r][c], blues[r][c], targetR, targetG, targetB) > threshold) {
+                    reds[r][c] = 0;
+                    greens[r][c] = 0;
+                    blues[r][c] = 0;
+                }
+            }
+        }
     }
 
     private double distance(short r1, short g1, short b1, short r2, short g2, short b2) {
