@@ -36,14 +36,14 @@ public class FindCards implements PixelFilter {
                     greens[r][c] = 255;
                     blues[r][c] = 255;
                 } else if (pixelDistance > threshold) {
-                    reds[r][c] = 255;
-                    greens[r][c] = 255;
-                    blues[r][c] = 255;
+                    reds[r][c] = 0;
+                    greens[r][c] = 0;
+                    blues[r][c] = 0;
                 }
             }
         }
 
-        createCards(img, reds, greens, blues);
+       // createCards(img, reds, greens, blues);
 
         img.setColorChannels(reds, greens, blues);
         return img;
