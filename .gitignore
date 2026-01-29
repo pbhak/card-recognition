@@ -1,0 +1,21 @@
+# Compiled class files
+*.class
+
+# Package Files
+*.jar
+*.war
+*.ear
+
+# macOS system files
+.DS_Store
+
+# IntelliJ IDEA
+.idea/workspace.xml
+.idea/tasks.xml
+.idea/usage.statistics.xml
+.idea/shelf
+
+# Build directories
+out/
+build/
+target/
