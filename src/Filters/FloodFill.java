@@ -1,31 +1,26 @@
 package Filters;
 
-import Interfaces.PixelFilter;
 import core.DImage;
-
-import java.awt.*;
 import java.util.ArrayList;
 
 
-public class FloodFill implements PixelFilter {
+public class FloodFill {
+	short[][] img;
 	public FloodFill(DImage maskedImage) {
-		short[][] img = maskedImage.getRedChannel();
+		img = maskedImage.getRedChannel();
 	}
 
-	public static ArrayList<Card> processImage() {
+	public boolean checkImageBoundaries(int r, int c) {
+        return false;
+    }
 
-	}
-
-
-	public static boolean checkImageBoundaries(r, c, img) {}
-
-	public static boolean isInBoundary(r, c, img) {
+	public boolean isInBoundary(int r, int c) {
 		int[] dirR = {0, 0, 1, -1};
 		int[] dirC = {1, -1, 0, 0};
 
 		boolean hasBlack = false;
 
-		for (int i = 0; i < dirR.length(); i++) {
+		for (int i = 0; i < dirR.length; i++) {
 			r += dirR[i];
 			c += dirC[i];
 
@@ -37,6 +32,8 @@ public class FloodFill implements PixelFilter {
 		return hasBlack;
 	}
 
-	public static boolean checkWhite(r, c, img) {}
+	public static boolean checkWhite(int r, int c) {
+		return false;
+	}
 
 }
