@@ -2,6 +2,7 @@ package Filters;
 
 import Interfaces.PixelFilter;
 import core.DImage;
+import org.w3c.dom.ls.LSOutput;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -23,6 +24,7 @@ public class FindCards implements PixelFilter {
 
     @Override
     public DImage processImage(DImage img) {
+        System.out.println("processing image");
         short[][] reds = img.getRedChannel();
         short[][] greens = img.getGreenChannel();
         short[][] blues = img.getBlueChannel();
@@ -43,9 +45,14 @@ public class FindCards implements PixelFilter {
             }
         }
 
-       // createCards(img, reds, greens, blues);
-
+        // set image before creating the class instance
         img.setColorChannels(reds, greens, blues);
+
+        // flood fill main
+        FloodFill f = new FloodFill(img);
+        f.processImage();
+
+
         return img;
     }
 
@@ -75,5 +82,75 @@ public class FindCards implements PixelFilter {
 }
 
 class Card {
+    // TODO: hook this to flood fill
+}
+
+class FloodFill {
+    DImage img;
+    short[][] reds;
+    short[][] greens;
+    short[][] blues;
+
+    public FloodFill(DImage img) {
+        this.img = img;
+        reds = img.getRedChannel();
+        greens = img.getGreenChannel();
+        blues = img.getBlueChannel();
+    }
+
+    public String processImage() {
+        String result = "";
+        for (int i = 0; i < img.getHeight(); i++) {
+            for (int j = 0; j < img.getWidth(); j++) {
+                if (isInBoundary(i, j)) {
+                    reds[i][j] = 255;
+                    greens[i][j] = 0;
+                    blues[i][j] = 0;
+                    result += String.format("[%d,%d]\n", i, j);
+                    System.out.println(result);
+                }
+            }
+        }
+        img.setColorChannels(reds, greens, blues);
+        return result;
+    }
+
+    public boolean checkImageBoundaries(int r, int c) {
+        if (r <= 0 || r >= img.getHeight() - 1 || c <= 0 || c >= img.getWidth() - 1) {
+            return false;
+        }
+        return true;
+    }
+
+    public boolean isInBoundary(int r, int c) {
+        int[] dirR = {0, 0, 1, -1};
+        int[] dirC = {1, -1, 0, 0};
+
+        int[][] values = new int[4][2];
+
+        for (int i = 0; i < dirR.length; i++) {
+            values[i][0] = r + dirR[i];
+            values[i][1] = c + dirC[i];
+        }
+
+        int blackCount = 0;
+        int whiteCount = 0;
+        for (int i = 0; i < values.length; i++) {
+            if (checkImageBoundaries(values[i][0], values[i][1])) {
+                if (reds[values[i][0]][values[i][1]] == 0) {
+                    blackCount++;
+                } else if (reds[values[i][0]][values[i][1]] == 255) {
+                    whiteCount++;
+                }
+            }
+        }
+
+        return blackCount == 1 && whiteCount == 3;
+    }
+
+    public static boolean checkWhite(int r, int c) {
+        return false;
+    }
 
 }
+
