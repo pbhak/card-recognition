@@ -5,10 +5,8 @@ import core.DImage;
 import org.w3c.dom.ls.LSOutput;
 
 import java.awt.*;
-import java.time.Duration;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Iterator;
 
 public class FindCards implements PixelFilter {
     short targetR;
@@ -93,36 +91,64 @@ class FloodFill {
     short[][] reds;
     short[][] greens;
     short[][] blues;
-    Boolean[][] visitedPoints;
+    ArrayList<Integer[]> queue;
 
     public FloodFill(DImage img) {
         this.img = img;
         reds = img.getRedChannel();
         greens = img.getGreenChannel();
         blues = img.getBlueChannel();
-        visitedPoints = new Boolean[img.getHeight()][img.getWidth()];
+        this.queue =  new ArrayList<>();
     }
 
-    public void processImage() {
+
+    public void processQueue(int r, int c) {
+        String result = "";
+
+        queue.add(new Integer[]{r, c});
+
+        System.out.println("queue size: " + queue.size());
+        for (Integer[] i : queue) {
+            System.out.println(i[0] + " " + i[1]);
+        }
+
+        while (!queue.isEmpty()) {
+            System.out.println("checking queue");
+            System.out.println(reds[queue.get(0)[0]][queue.get(0)[1]]);
+            System.out.println(queue.get(0)[0] +  " " + queue.get(0)[1]);
+            if (isInBoundary(queue.get(0)[0], queue.get(0)[1])) {
+                System.out.println("inside if statement");
+                reds[queue.get(0)[0]][queue.get(0)[1]] = 255;
+                greens[queue.get(0)[0]][queue.get(0)[1]] = 0;
+                blues[queue.get(0)[0]][queue.get(0)[1]] = 0;
+                result += String.format("[%d,%d]\n", queue.get(0)[0], queue.get(0)[1]);
+            }
+            queue.remove(0);
+        }
+    }
+
+    public String processImage() {
         for (int i = 0; i < img.getHeight(); i++) {
             for (int j = 0; j < img.getWidth(); j++) {
-                if (isInBoundary(i, j)) {
-                    reds[i][j] = 255;
-                    greens[i][j] = 0;
-                    blues[i][j] = 0;
-                    System.out.printf("ran on point (%d,%d)\n", j, i);
+                if (reds[i][j] == 255) {
+                    processQueue(i, j);
                 }
             }
         }
+
         img.setColorChannels(reds, greens, blues);
+        return "";
     }
 
     public boolean checkImageBoundaries(int r, int c) {
-        return r > 0 && r < img.getHeight() - 1 && c > 0 && c < img.getWidth() - 1;
+        if (r <= 0 || r >= img.getHeight() - 1 || c <= 0 || c >= img.getWidth() - 1) {
+            return false;
+        }
+        return true;
     }
 
     public boolean isInBoundary(int r, int c) {
-        if (visitedPoints[r][c] != null) return visitedPoints[r][c];
+        System.out.println("isInBoundary got called");
         int[] dirR = {0, 0, 1, -1};
         int[] dirC = {1, -1, 0, 0};
 
@@ -135,17 +161,16 @@ class FloodFill {
 
         int blackCount = 0;
         int whiteCount = 0;
-        for (int[] value : values) {
-            if (checkImageBoundaries(value[0], value[1])) {
-                if (reds[value[0]][value[1]] == 0) {
+        for (int i = 0; i < values.length; i++) {
+            if (checkImageBoundaries(values[i][0], values[i][1])) {
+                if (reds[values[i][0]][values[i][1]] == 0) {
                     blackCount++;
-                } else if (reds[value[0]][value[1]] == 255) {
+                } else if (reds[values[i][0]][values[i][1]] == 255) {
+                    queue.add(new Integer[]{values[i][0], values[i][1]});
                     whiteCount++;
                 }
             }
         }
-
-        visitedPoints[r][c] = blackCount == 1 && whiteCount == 3;
         return blackCount == 1 && whiteCount == 3;
     }
 
@@ -154,3 +179,4 @@ class FloodFill {
     }
 
 }
+
