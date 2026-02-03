@@ -1,5 +1,14 @@
 Roadmap 
 
+
+
+02/03:
+* flood fill works but slow 
+    - create a queue for processing white pixels only since it currently processes every pixel which goes through 2x loop neighbour search -- redundancy is insane
+    - create boolean visited[][] for efficiency 
+    - implement Card class entirely - store cards and filter color noise
+    
+
 1. Color Masking
 	Pros: 
 		- functional
