@@ -134,10 +134,7 @@ class FloodFill {
     }
 
     public boolean checkImageBoundaries(int r, int c) {
-        if (r <= 0 || r >= img.getHeight() - 1 || c <= 0 || c >= img.getWidth() - 1) {
-            return false;
-        }
-        return true;
+        return (r <= 0 || r >= img.getHeight() - 1 || c <= 0 || c >= img.getWidth() - 1);
     }
 
     public boolean isInBoundary(int r, int c) {
