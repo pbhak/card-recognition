@@ -114,6 +114,15 @@ class FloodFill {
                 }
             }
         }
+        for (int i = 0; i < img.getHeight(); i++) {
+            for (int j = 0; j < img.getWidth(); j++) {
+                if (hasRedNeighbor(i, j)) {
+                    reds[i][j] = 254;
+                    greens[i][j] = 0;
+                    blues[i][j] = 0;
+                }
+            }
+        }
         img.setColorChannels(reds, greens, blues);
     }
 
@@ -149,8 +158,24 @@ class FloodFill {
         return blackCount == 1 && whiteCount == 3;
     }
 
-    public static boolean checkWhite(int r, int c) {
+    public boolean hasRedNeighbor(int r, int c) {
+        int[][] pointValues = new int[8][2];
+        int[] dirR = {-1, -1, 1, 0, 0, 1, 1, 1};
+        int[] dirC = {-1, 0, 1, -1, 1, -1, 0, 1};
+
+        for (int i = 0; i < dirR.length; i++) {
+            pointValues[i][0] = r + dirR[i];
+            pointValues[i][1] = c + dirC[i];
+        }
+
+        for (int[] pointValue : pointValues) {
+            if (checkImageBoundaries(pointValue[0], pointValue[1]))
+                if (isRed(pointValue[0], pointValue[1])) return true;
+        }
         return false;
     }
 
+    public boolean isRed(int r, int c) {
+        return reds[r][c] == 255 && greens[r][c] == 0 && blues[r][c] == 0;
+    }
 }
