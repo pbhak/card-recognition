@@ -4,6 +4,7 @@ import Interfaces.PixelFilter;
 import core.DImage;
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.Iterator;
 
 public class FindCards implements PixelFilter {
     short targetR;
@@ -22,7 +23,6 @@ public class FindCards implements PixelFilter {
 
     @Override
     public DImage processImage(DImage img) {
-        System.out.println("processing image");
         short[][] reds = img.getRedChannel();
         short[][] greens = img.getGreenChannel();
         short[][] blues = img.getBlueChannel();
@@ -151,22 +151,17 @@ class FloodFill {
     }
 
     public boolean isInBoundary(int r, int c) {
-        System.out.println("isInBoundary got called");
         int[] dirR = {0, 0, 1, -1};
         int[] dirC = {1, -1, 0, 0};
 
-        int[][] values = new int[4][2];
+        int blackCount = 0;
 
         for (int i = 0; i < dirR.length; i++) {
-            values[i][0] = r + dirR[i];
-            values[i][1] = c + dirC[i];
-        }
+            int nr = r + dirR[i];
+            int nc = c + dirC[i];
 
-        int blackCount = 0;
-        int whiteCount = 0;
-        for (int[] value : values) {
-            if (checkImageBoundaries(value[0], value[1])) {
-                if (reds[value[0]][value[1]] == 0) {
+            if (checkImageBoundaries(nr, nc)) {
+                if (reds[nr][nc] == 0) {
                     blackCount++;
                 } else if (reds[value[0]][value[1]] == 255) {
                     queue.add(new Integer[]{value[0], value[1]});
