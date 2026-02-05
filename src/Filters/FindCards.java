@@ -5,6 +5,7 @@ import core.DImage;
 import org.w3c.dom.ls.LSOutput;
 
 import java.awt.*;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Iterator;
 
@@ -82,7 +83,35 @@ public class FindCards implements PixelFilter {
 }
 
 class Card {
-    // TODO: hook this to flood fill
+    ArrayList<Integer[]> boundaryPixels;
+
+    public Card() {
+        boundaryPixels = new ArrayList<>();
+    }
+
+    public void addElement(Integer[] boundaryPixel) {
+        boundaryPixels.add(boundaryPixel);
+    }
+
+    public int[][] findCorners() {
+        Integer minX = boundaryPixels.get(0)[0];
+        Integer minY = boundaryPixels.get(0)[1];
+        Integer maxX = boundaryPixels.get(boundaryPixels.size() - 1)[0];
+        Integer maxY = boundaryPixels.get(boundaryPixels.size() - 1)[1];
+
+        for (Integer[] i : boundaryPixels) {
+            minX = Math.min(minX, i[0]);
+            minY = Math.min(minY, i[1]);
+            maxX = Math.max(maxX, i[0]);
+            maxY = Math.max(maxY, i[1]);
+        }
+
+        return new int[][]{{minX, minY}, {maxX, maxY}, {minX, maxY}, {maxX, minY}};
+    }
+
+    public int getSize() {
+        return boundaryPixels.size();
+    }
 }
 
 class FloodFill {
@@ -103,11 +132,14 @@ class FloodFill {
     }
 
 
-    public void processQueue(int r, int c) {
+    public Card processQueue(int r, int c) {
+        Card card = new Card();
+
         queue.add(new Integer[]{r, c});
 
         while (!queue.isEmpty()) {
             Integer[] current = queue.get(0);
+            card.addElement(current);
             queue.remove(0);
             if (visited[current[0]][current[1]]) continue;
             visited[current[0]][current[1]] = true;
@@ -118,6 +150,7 @@ class FloodFill {
                 blues[current[0]][current[1]] = 0;
             }
         }
+        return card;
     }
 
 
@@ -125,7 +158,14 @@ class FloodFill {
         for (int i = 0; i < img.getHeight(); i++) {
             for (int j = 0; j < img.getWidth(); j++) {
                 if (reds[i][j] == 255 && !visited[i][j]) {
-                    processQueue(i, j);
+                    Card currCard = processQueue(i, j);
+                    if (currCard.getSize() > 100) {
+                        int[][] corners = currCard.findCorners();
+                        for (int k = 0; k < corners.length; k++) {
+                            System.out.println(corners[k][0] + " " + corners[k][1]);
+                            greens[corners[k][0]][corners[k][1]] = 255;
+                        }
+                    }
                 }
             }
         }
@@ -163,3 +203,4 @@ class FloodFill {
     }
 
 }
+
