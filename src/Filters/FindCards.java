@@ -2,12 +2,9 @@ package Filters;
 
 import Interfaces.PixelFilter;
 import core.DImage;
-import org.w3c.dom.ls.LSOutput;
 
-import java.awt.*;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.function.DoubleToIntFunction;
 
 public class FindCards implements PixelFilter {
     short targetR;
@@ -15,6 +12,7 @@ public class FindCards implements PixelFilter {
     short targetB;
     double threshold;
     ArrayList<Card> cards;
+    short[][] reds, greens, blues;
 
     public FindCards() {
         targetR = 215;
@@ -26,9 +24,9 @@ public class FindCards implements PixelFilter {
 
     @Override
     public DImage processImage(DImage img) {
-        short[][] reds = img.getRedChannel();
-        short[][] greens = img.getGreenChannel();
-        short[][] blues = img.getBlueChannel();
+        reds = img.getRedChannel();
+        greens = img.getGreenChannel();
+        blues = img.getBlueChannel();
 
         // mask cards
         for (int r = 0; r < reds.length; r++) {
@@ -53,28 +51,7 @@ public class FindCards implements PixelFilter {
         FloodFill f = new FloodFill(img);
         f.processImage();
 
-
         return img;
-    }
-
-    private void createCards(DImage img, short[][] reds, short[][] greens, short[][] blues) {
-        int currentCard = 0;
-        /*
-            iterate over black and white masked image
-            if a row of white is found, add it as the first row of cards[currentCard]
-            then go to the next row from the beginning and repeat until all rows for cards[currentCard] are filled
-            repeat for all 12 cards
-        */
-        for (int y = 0; y < img.getHeight(); y++) {
-            int whiteCount = 0;
-            for (int x = 0; x < img.getWidth(); x++) {
-                if (img.getColorPixelGrid()[y][x] == Color.white.getRGB()) {
-                    whiteCount++;
-                } else if (whiteCount > 20) {
-                    // TODO
-                }
-            }
-        }
     }
 
     private double distance(short r1, short g1, short b1, short r2, short g2, short b2) {
@@ -106,6 +83,8 @@ class Card {
             maxY = Math.max(maxY, i[1]);
         }
 
+        if (maxY - minY < 150) return new int[][]{{-1, -1}};
+
         return new int[][]{{minX, minY}, {maxX, maxY}, {minX, maxY}, {maxX, minY}};
     }
 
@@ -116,9 +95,7 @@ class Card {
 
 class FloodFill {
     DImage img;
-    short[][] reds;
-    short[][] greens;
-    short[][] blues;
+    short[][] reds, greens, blues;
     ArrayList<Integer[]> queue;
     boolean[][] visited;
 
@@ -153,7 +130,6 @@ class FloodFill {
         return card;
     }
 
-
     public void processImage() {
         for (int i = 0; i < img.getHeight(); i++) {
             for (int j = 0; j < img.getWidth(); j++) {
@@ -161,9 +137,10 @@ class FloodFill {
                     Card currCard = processQueue(i, j);
                     if (currCard.getSize() > 100) {
                         int[][] corners = currCard.findCorners();
-                        for (int k = 0; k < corners.length; k++) {
-                            System.out.println(corners[k][0] + " " + corners[k][1]);
-                            greens[corners[k][0]][corners[k][1]] = 255;
+                        for (int[] corner : corners) {
+                            if (corner[0] == -1 && corner[1] == -1) continue;
+                            System.out.printf("Found corner at (%d, %d)\n", corner[1], corner[0]);
+                            drawCorner(corner[0], corner[1]);
                         }
                     }
                 }
@@ -171,6 +148,23 @@ class FloodFill {
         }
 
         img.setColorChannels(reds, greens, blues);
+    }
+
+    private void drawCorner(int r, int c) {
+        // 3x3 grid with its center at (r, c)
+        System.out.printf("Drawing corner with center at (%d, %d)\n", r, c);
+        int[] dirR = {0, -1, 0, -1, 0, 0, 1, 1, 1};
+        int[] dirC = {0, -1, -1, 1, -1, 1, -1, 0, 1};
+
+        for (int i = 0; i < dirR.length; i++) {
+            int newR = r + dirR[i];
+            int newC = c + dirC[i];
+            if (checkImageBoundaries(newR, newC)) {
+                reds[newR][newC] = 0;
+                greens[newR][newC] = 255;
+                blues[newR][newC] = 0;
+            }
+        }
     }
 
     public boolean checkImageBoundaries(int r, int c) {
@@ -197,10 +191,5 @@ class FloodFill {
         }
         return blackCount >=1;
     }
-
-    public static boolean checkWhite(int r, int c) {
-        return false;
-    }
-
 }
 
